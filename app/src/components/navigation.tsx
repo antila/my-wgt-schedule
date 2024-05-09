@@ -13,7 +13,7 @@ interface NavLinkProps {
 
 const NavLink = ({ children, href }: NavLinkProps): JSX.Element => {
   return (
-    <Link className='m-2 w-35 h-15 inline-block content-around items-center text-center basis-1/4' href={href}>
+    <Link className='m-2 w-35 h-10 text-sm inline-block content-around items-center text-center basis-1/4' href={href}>
       {children}
     </Link>
   )
@@ -55,7 +55,7 @@ export const Navigation = (): JSX.Element => {
               </SidebarLink>
               <Separator />
               <SidebarLink href={'/me'} onClick={onClick}>
-                My Schedule
+                Schedule
               </SidebarLink>
               <Separator />
               <SidebarLink href={'/bands'} onClick={onClick}>
@@ -88,7 +88,7 @@ export const Navigation = (): JSX.Element => {
 
       <NavLink href={'/me'}>
         <UserRound className='m-auto' />
-        My Schedule
+        Schedule
       </NavLink>
       <NavLink href={'/bands'}>
         <Music className='m-auto' />
