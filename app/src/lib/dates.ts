@@ -1,4 +1,6 @@
-export const getDateFromDay = (day: string) => {
+export type WgtDay = 'Thursday' | 'Friday' | 'Saturday' | 'Sunday' | 'Monday'
+
+export const getDateFromDay = (day: WgtDay) => {
   switch (day.toLocaleLowerCase()) {
     case 'thursday':
       return '2024-05-16'
@@ -13,7 +15,7 @@ export const getDateFromDay = (day: string) => {
   }
 }
 
-export const getDayFromDate = (day: string) => {
+export const getDayFromDate = (day: string): WgtDay => {
   switch (day) {
     case '2024-05-16':
       return 'Thursday'
@@ -26,4 +28,6 @@ export const getDayFromDate = (day: string) => {
     case '2024-05-20':
       return 'Monday'
   }
+
+  throw new Error(`Invalid day: ${day}`)
 }

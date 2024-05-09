@@ -1,28 +1,12 @@
-// 'use client'
-
 import { ButtonLink } from '@/components/buttonLink'
-import { Spinner } from '@/components/spinner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getData } from '@/hooks/dataHook'
-import { getDateFromDay } from '@/lib/dates'
+import { type WgtDay, getDateFromDay } from '@/lib/dates'
 import { activeButton, primaryColor } from '@/lib/theme'
 import { generateBandSlug } from '@/lib/utils'
+import type { Data } from '@/types/data'
 
-const Day = async ({ params }: { params: { day: string } }) => {
-  const { day } = params
-
-  // const { isPending, data: bands } = useDataQuery()
-  const data = await getData()
-
-  // console.log('day', day)
-
-  // if (isPending) {
-  //   return <Spinner />
-  // }
-
-  if (!data) {
-    return <div>No data</div>
-  }
-
+const BandListDay = ({ day, data }: { day: WgtDay; data: Data }) => {
   const todaysDate = getDateFromDay(day)
   const todaysBands = data.bands.filter((band) => band.date === todaysDate)
   const allVenues: string[] = todaysBands.map((band) => band.venue)
@@ -34,35 +18,6 @@ const Day = async ({ params }: { params: { day: string } }) => {
 
   return (
     <div>
-      <ButtonLink
-        noBg={day === 'friday'}
-        className={` mr-[6px] ${day === 'friday' ? activeButton : ''}`}
-        href={'/day/friday'}
-      >
-        Friday
-      </ButtonLink>
-      <ButtonLink
-        noBg={day === 'saturday'}
-        className={` mr-[6px] ${day === 'saturday' ? activeButton : ''}`}
-        href={'/day/saturday'}
-      >
-        Saturday
-      </ButtonLink>
-      <ButtonLink
-        noBg={day === 'sunday'}
-        className={` mr-[6px] ${day === 'sunday' ? activeButton : ''}`}
-        href={'/day/sunday'}
-      >
-        Sunday
-      </ButtonLink>
-      <ButtonLink
-        noBg={day === 'monday'}
-        className={` mr-0 ${day === 'monday' ? activeButton : ''}`}
-        href={'/day/monday'}
-      >
-        Monday
-      </ButtonLink>
-
       {venues.map((venue) => {
         return (
           <div key={`venue-${venue}`} className='mb-6'>
@@ -92,6 +47,47 @@ const Day = async ({ params }: { params: { day: string } }) => {
         )
       })}
     </div>
+  )
+}
+
+const Day = async ({ params }: { params: { day: WgtDay } }) => {
+  const { day } = params
+
+  const data = await getData()
+
+  if (!data) {
+    return <div>No data</div>
+  }
+
+  return (
+    <Tabs defaultValue={day} className='w-full'>
+      <TabsList className='w-full'>
+        <TabsTrigger className='w-1/4' value='friday'>
+          Friday
+        </TabsTrigger>
+        <TabsTrigger className='w-1/4' value='saturday'>
+          Saturday
+        </TabsTrigger>
+        <TabsTrigger className='w-1/4' value='sunday'>
+          Sunday
+        </TabsTrigger>
+        <TabsTrigger className='w-1/4' value='monday'>
+          Monday
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value='friday'>
+        <BandListDay day={'Friday'} data={data} />
+      </TabsContent>
+      <TabsContent value='saturday'>
+        <BandListDay day={'Saturday'} data={data} />
+      </TabsContent>
+      <TabsContent value='sunday'>
+        <BandListDay day={'Sunday'} data={data} />
+      </TabsContent>
+      <TabsContent value='monday'>
+        <BandListDay day={'Monday'} data={data} />
+      </TabsContent>
+    </Tabs>
   )
 }
 

@@ -7,6 +7,8 @@ interface Release {
 export interface DiscogsData {
   bandId: number
   image: string
+  imageHeight: number
+  imageWidth: number
   profile: string
   urls: string[]
   releases: Release[]

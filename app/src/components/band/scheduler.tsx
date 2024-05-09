@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  ScheduleStatus,
-  getBandState,
-  getScheduleData,
-  setBandAsInterested,
-  setBandAsNo,
-  setBandAsScheduled,
-} from '@/lib/scheduleData'
+import { ScheduleStatus, getBandState, setBandAsInterested, setBandAsNo, setBandAsScheduled } from '@/lib/scheduleData'
 import { activeButton } from '@/lib/theme'
 import type { BandInfo } from '@/types/band'
 import { Minus, Plus, Sprout, Star } from 'lucide-react'

@@ -12,12 +12,15 @@ export interface ScheduleData {
 }
 
 export const getScheduleData = (): ScheduleData => {
-  const schedule = localStorage.getItem('schedule')
-  if (!schedule) {
-    return {}
-  }
+  if (typeof window !== 'undefined') {
+    const schedule = localStorage.getItem('schedule')
+    if (!schedule) {
+      return {}
+    }
 
-  return JSON.parse(schedule)
+    return JSON.parse(schedule)
+  }
+  return {}
 }
 
 export const setScheduleData = (schedule: ScheduleData) => {

@@ -81,12 +81,22 @@ const Band = async ({ params }: BandProps) => {
       )}
 
       <h1 className='text-4xl mb-2 clear-both'>{band?.name}</h1>
-      {discogs?.image ? <img src={discogs?.image} alt={band.name} /> : <></>}
+      {discogs?.image ? (
+        <img src={discogs?.image} height={discogs.imageHeight} width={discogs.imageWidth} alt={band.name} />
+      ) : (
+        <></>
+      )}
 
       <div className='bg-zinc-950 p-3 rounded-lg border-zinc-800 border mt-2 mb-4'>
         <p className='text-xl'>{band?.venue}</p>
         <p>
-          {getDayFromDate(band?.date)} - {band?.time} <span className='text-zinc-600'>({band?.date})</span>
+          {band?.date ? (
+            <>
+              {getDayFromDate(band?.date)} - {band?.time} <span className='text-zinc-600'>({band?.date})</span>
+            </>
+          ) : (
+            <></>
+          )}
         </p>
       </div>
 
@@ -124,7 +134,7 @@ const Band = async ({ params }: BandProps) => {
           <h2 className='text-2xl mt-4 mb-2'>Videos</h2>
           {discogs?.videos.map((video) => {
             return (
-              <div key={video} className='aspect-video w-full mb-4'>
+              <div key={video} className='aspect-video w-full mb-4 bg-zinc-800'>
                 <LazyYoutube src={video.replace('/watch?v=', '/embed/')} />
                 {/* <iframe
                   width='100%'

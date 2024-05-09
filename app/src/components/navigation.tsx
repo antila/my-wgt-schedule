@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { navBackground } from '@/lib/theme'
 import { CalendarDays, Home, MapPinned, Menu, Music, Settings, UserRound } from 'lucide-react'
 import Link from 'next/link'
+import React from 'react'
 
 interface NavLinkProps {
   href: string
@@ -12,24 +13,36 @@ interface NavLinkProps {
 
 const NavLink = ({ children, href }: NavLinkProps): JSX.Element => {
   return (
-    <Link className='m-2 w-35 h-15 inline-block content-around items-center text-center basis-1/5' href={href}>
+    <Link className='m-2 w-35 h-15 inline-block content-around items-center text-center basis-1/4' href={href}>
       {children}
     </Link>
   )
 }
 
-const SidebarLink = ({ children, href }: NavLinkProps): JSX.Element => {
+interface SidebarLinkProps {
+  href: string
+  children: React.ReactNode
+  onClick: () => void
+}
+
+const SidebarLink = ({ children, href, onClick }: SidebarLinkProps): JSX.Element => {
   return (
-    <Link className='m-2 w-full text-2xl inline-block' href={href}>
+    <Link className='m-2 w-full text-2xl inline-block' href={href} onClick={onClick}>
       {children}
     </Link>
   )
 }
 
 export const Navigation = (): JSX.Element => {
+  const [open, setOpen] = React.useState(false)
+
+  const onClick = () => {
+    setOpen(false)
+  }
+
   return (
     <div className={`mb-2 py-2 flex ${navBackground}`}>
-      <Sheet>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger>
           <Menu className='w-24' />
         </SheetTrigger>
@@ -37,21 +50,37 @@ export const Navigation = (): JSX.Element => {
           <SheetHeader>
             <SheetTitle>My WGT Schedule</SheetTitle>
             <SheetDescription>
-              <SidebarLink href={'/'}>Home</SidebarLink>
+              <SidebarLink href={'/'} onClick={onClick}>
+                Home
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/me'}>My Schedule</SidebarLink>
+              <SidebarLink href={'/me'} onClick={onClick}>
+                My Schedule
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/bands'}>Bands</SidebarLink>
+              <SidebarLink href={'/bands'} onClick={onClick}>
+                Bands
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/days'}>Days</SidebarLink>
+              <SidebarLink href={'/days'} onClick={onClick}>
+                Days
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/venues'}>Venues</SidebarLink>
+              {/* <SidebarLink href={'/venues'} onClick={onClick}>
+                Venues
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/resources'}>Resources</SidebarLink>
+              <SidebarLink href={'/resources'} onClick={onClick}>
+                Resources
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/settings'}>Settings</SidebarLink>
+              <SidebarLink href={'/settings'} onClick={onClick}>
+                Settings
+              </SidebarLink>
               <Separator />
-              <SidebarLink href={'/about'}>About</SidebarLink>
+              <SidebarLink href={'/about'} onClick={onClick}>
+                About
+              </SidebarLink> */}
             </SheetDescription>
           </SheetHeader>
         </SheetContent>
@@ -69,10 +98,10 @@ export const Navigation = (): JSX.Element => {
         <CalendarDays className='m-auto' />
         Days
       </NavLink>
-      <NavLink href={'/venues'}>
+      {/* <NavLink href={'/venues'}>
         <MapPinned className='m-auto' />
         Venues
-      </NavLink>
+      </NavLink> */}
 
       {/* <NavLink href={'/resources'}>Resources</NavLink> */}
     </div>

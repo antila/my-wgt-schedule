@@ -26,7 +26,7 @@ const LazyYoutube = ({ src }: { src: string }) => {
   }, [])
 
   return (
-    <div ref={videoRef} className='mb-4'>
+    <div ref={videoRef} className='h-full'>
       {load ? (
         <iframe
           width='100%'

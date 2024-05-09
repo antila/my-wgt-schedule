@@ -1,66 +1,31 @@
 'use client'
 
 import { ButtonLink } from '@/components/buttonLink'
-import { Spinner } from '@/components/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getData } from '@/hooks/dataHook'
-import { getDateFromDay } from '@/lib/dates'
+import { type WgtDay, getDateFromDay } from '@/lib/dates'
 import { type ScheduleData, ScheduleStatus, getScheduleData } from '@/lib/scheduleData'
-import { activeButton, primaryColor } from '@/lib/theme'
 import { generateBandSlug } from '@/lib/utils'
 import type { BandInfo } from '@/types/band'
 import type { Data } from '@/types/data'
 import { Fragment, useEffect, useState } from 'react'
 
-const MySchedule = () => {
-  const initialData: Data = { bands: [], genres: [], styles: [] }
-  const [data, setData] = useState(initialData)
+const BandList = ({
+  bands,
+  schedule,
+  status,
+}: { bands: BandInfo[]; schedule: ScheduleData; status: ScheduleStatus }) => {
+  let myBands = bands.filter((band: BandInfo) => schedule[band.id] === status)
 
-  const initialSchedule: ScheduleData = {}
-  const [schedule, setSchedule] = useState(initialSchedule)
-
-  useEffect(() => {
-    const load = async () => {
-      const data = await getData()
-      setData(data)
-      const schedule = getScheduleData()
-      setSchedule(schedule)
-    }
-    load()
-  }, [])
-
-  if (!data || !data.bands) {
-    return <div>No data</div>
+  if (status === ScheduleStatus.UNDEFINED) {
+    myBands = bands.filter((band: BandInfo) => Object.hasOwn(schedule, band.id) === false)
   }
 
-  const myBands = data.bands.filter((band: BandInfo) => schedule[band.id] === ScheduleStatus.SCHEDULED)
-
-  const allVenues: string[] = myBands.map((band: BandInfo) => band.venue)
-  const venues = allVenues
-    .filter((value, index, array) => {
-      return array.indexOf(value) === index
-    })
-    .sort((a, b) => a.localeCompare(b))
+  const days: WgtDay[] = ['Friday', 'Saturday', 'Sunday', 'Monday']
 
   return (
-    <div>
-      <Tabs defaultValue='added' className='w-full'>
-        <TabsList className='w-full'>
-          <TabsTrigger className='w-1/3' value='added'>
-            Added
-          </TabsTrigger>
-          <TabsTrigger className='w-1/3' value='interested'>
-            Interested
-          </TabsTrigger>
-          <TabsTrigger className='w-1/3' value='nope'>
-            Not for me
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value='added'>Make changes to your account here.</TabsContent>
-        <TabsContent value='password'>Change your password here.</TabsContent>
-      </Tabs>
-
-      {['Friday', 'Saturday', 'Sunday', 'Monday'].map((day) => {
+    <>
+      {days.map((day) => {
         return (
           <Fragment key={day}>
             <h1 className='text-2xl mb-1'>{day}</h1>
@@ -90,7 +55,54 @@ const MySchedule = () => {
           </Fragment>
         )
       })}
-    </div>
+    </>
+  )
+}
+
+const MySchedule = () => {
+  const initialData: Data = { bands: [], genres: [], styles: [] }
+  const [data, setData] = useState(initialData)
+
+  const initialSchedule: ScheduleData = {}
+  const [schedule, setSchedule] = useState(initialSchedule)
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await getData()
+      setData(data)
+      const schedule = getScheduleData()
+      setSchedule(schedule)
+    }
+    load()
+  }, [])
+
+  if (!data || !data.bands) {
+    return <div>No data</div>
+  }
+
+  return (
+    <Tabs defaultValue='added' className='w-full'>
+      <TabsList className='w-full'>
+        <TabsTrigger className='w-1/3' value='added'>
+          Added
+        </TabsTrigger>
+        <TabsTrigger className='w-1/3' value='interested'>
+          Interested
+        </TabsTrigger>
+        <TabsTrigger className='w-1/3' value='uncategorized'>
+          Not categorized
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value='added'>
+        <BandList bands={data.bands} schedule={schedule} status={ScheduleStatus.SCHEDULED} />
+      </TabsContent>
+      <TabsContent value='interested'>
+        <BandList bands={data.bands} schedule={schedule} status={ScheduleStatus.INTERESTED} />
+      </TabsContent>
+      <TabsContent value='uncategorized'>
+        <BandList bands={data.bands} schedule={schedule} status={ScheduleStatus.UNDEFINED} />
+      </TabsContent>
+    </Tabs>
   )
 }
 
