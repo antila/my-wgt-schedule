@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { type BandInfo, type Data, cacheFolder, dataPath, delay, discogsDataPath } from './updateData'
+import { type BandInfo, type Data, dataPath, delay, discogsDataPath, discogsFolder } from './updateData'
 
 const BASE_URL = 'https://api.discogs.com'
 const TOKEN = process.env.DISCOGS_ACCESS_TOKEN
@@ -50,22 +50,21 @@ const downloadFile = async (filename: string, url: string, band: BandInfo) => {
 
 export const enrichData = async () => {
   data = JSON.parse(fs.readFileSync(dataPath).toString())
-  console.log('bands', data)
 
   // Download search info
   for (const band of data.bands) {
-    if (!fs.existsSync(path.join(cacheFolder, getBandFolder(band)))) {
-      fs.mkdirSync(path.join(cacheFolder, getBandFolder(band)))
+    if (!fs.existsSync(path.join(discogsFolder, getBandFolder(band)))) {
+      fs.mkdirSync(path.join(discogsFolder, getBandFolder(band)))
     }
 
-    const bandSearchDataFileName = path.join(cacheFolder, getBandFolder(band), 'search.json')
+    const bandSearchDataFileName = path.join(discogsFolder, getBandFolder(band), 'search.json')
     const url = getSearchUrl(encodeURIComponent(band.name))
     await downloadFile(bandSearchDataFileName, url, band)
   }
 
   // Add discogs id to band
   for (const band of data.bands) {
-    const bandSearchDataFileName = path.join(cacheFolder, getBandFolder(band), 'search.json')
+    const bandSearchDataFileName = path.join(discogsFolder, getBandFolder(band), 'search.json')
     if (fs.existsSync(bandSearchDataFileName)) {
       const data = JSON.parse(fs.readFileSync(bandSearchDataFileName).toString())
       const matches: any = data.results.filter((artist: any) => artist.title === band.name)
@@ -80,7 +79,7 @@ export const enrichData = async () => {
   // Download artist info
   for (const band of data.bands) {
     if (band.discogsId) {
-      const bandDataFileName = path.join(cacheFolder, getBandFolder(band), 'artist.json')
+      const bandDataFileName = path.join(discogsFolder, getBandFolder(band), 'artist.json')
       const url = getArtistUrl(band.discogsId)
       await downloadFile(bandDataFileName, url, band)
     }
@@ -89,7 +88,7 @@ export const enrichData = async () => {
   // Download release info
   for (const band of data.bands) {
     if (band.discogsId) {
-      const bandReleasesFileName = path.join(cacheFolder, getBandFolder(band), 'releases.json')
+      const bandReleasesFileName = path.join(discogsFolder, getBandFolder(band), 'releases.json')
       const url = getReleasesUrl(band.discogsId)
       await downloadFile(bandReleasesFileName, url, band)
     }
@@ -98,7 +97,7 @@ export const enrichData = async () => {
   // Download all releases
   for (const band of data.bands) {
     if (band.discogsId) {
-      const bandReleasesFileName = path.join(cacheFolder, getBandFolder(band), 'releases.json')
+      const bandReleasesFileName = path.join(discogsFolder, getBandFolder(band), 'releases.json')
 
       if (fs.existsSync(bandReleasesFileName)) {
         const releases = JSON.parse(fs.readFileSync(bandReleasesFileName).toString())
@@ -106,7 +105,7 @@ export const enrichData = async () => {
 
         for (const release of mainReleases.sort((a: any, b: any) => b.year - a.year)) {
           const url = `${release.resource_url}?token=${TOKEN}`
-          const releaseFileName = path.join(cacheFolder, getBandFolder(band), `release-${release.id}.json`)
+          const releaseFileName = path.join(discogsFolder, getBandFolder(band), `release-${release.id}.json`)
           await downloadFile(releaseFileName, url, band)
         }
       }
@@ -117,10 +116,10 @@ export const enrichData = async () => {
 
   // Generate discogs-data
   for (const band of data.bands) {
-    const files = fs.readdirSync(path.join(cacheFolder, getBandFolder(band)))
+    const files = fs.readdirSync(path.join(discogsFolder, getBandFolder(band)))
     const releases = files.filter((filename) => filename.includes('release-'))
     for (const releaseFile of releases) {
-      const releasePath = path.join(cacheFolder, getBandFolder(band), releaseFile)
+      const releasePath = path.join(discogsFolder, getBandFolder(band), releaseFile)
       const release = JSON.parse(fs.readFileSync(releasePath).toString())
       if (release.videos && release.videos.length > 0) {
         for (const video of release.videos) {
@@ -148,9 +147,9 @@ export const enrichData = async () => {
   // Generate discogs-data
   for (const band of data.bands) {
     if (band.discogsId) {
-      const bandDataFileName = path.join(cacheFolder, getBandFolder(band), 'artist.json')
-      const bandReleasesFileName = path.join(cacheFolder, getBandFolder(band), 'releases.json')
-      let data: any
+      const bandDataFileName = path.join(discogsFolder, getBandFolder(band), 'artist.json')
+      const bandReleasesFileName = path.join(discogsFolder, getBandFolder(band), 'releases.json')
+      let discogData: any
       if (fs.existsSync(bandDataFileName)) {
         const artist = JSON.parse(fs.readFileSync(bandDataFileName).toString())
         let image
@@ -167,7 +166,7 @@ export const enrichData = async () => {
         const profile = artist.profile
         const urls = artist.urls
 
-        data = {
+        discogData = {
           bandId: band.id,
           image,
           imageWidth,
@@ -183,7 +182,7 @@ export const enrichData = async () => {
         const releases = JSON.parse(fs.readFileSync(bandReleasesFileName).toString())
         const mainReleases = releases.releases.filter((release: any) => release.role === 'Main')
 
-        data.releases = mainReleases.map((release: any) => {
+        discogData.releases = mainReleases.map((release: any) => {
           const { title, year, thumb } = release
           return {
             title,
@@ -193,33 +192,44 @@ export const enrichData = async () => {
         })
       }
 
-      const files = fs.readdirSync(path.join(cacheFolder, getBandFolder(band)))
+      const files = fs.readdirSync(path.join(discogsFolder, getBandFolder(band)))
       const releases = files.filter((filename) => filename.includes('release-'))
       for (const releaseFile of releases) {
-        const release = JSON.parse(fs.readFileSync(path.join(cacheFolder, getBandFolder(band), releaseFile)).toString())
-        data.genres = data.genres.concat(release.genres)
-        data.styles = data.styles.concat(release.styles)
+        const release = JSON.parse(
+          fs.readFileSync(path.join(discogsFolder, getBandFolder(band), releaseFile)).toString(),
+        )
+        discogData.genres = discogData.genres.concat(release.genres)
+        discogData.styles = discogData.styles.concat(release.styles)
+        data.genres = data.genres.concat(discogData.genres)
+        data.styles = data.styles.concat(discogData.styles)
 
         if (release.videos) {
           for (const video of release.videos.sort((a: any, b: any) => b.viewCount - a.viewCount)) {
-            data.videos.push(video.uri)
+            discogData.videos.push(video.uri)
           }
-          console.log('data.videos before', data.videos)
-          data.videos = data.videos.slice(0, 3)
-          console.log('data.videos after', data.videos)
+
+          discogData.videos = discogData.videos.slice(0, 3)
         }
       }
 
-      data.genres = data.genres.filter(
-        (value: string, index: number, array: string[]) => array.indexOf(value) === index,
-      )
-      data.styles = data.styles.filter(
-        (value: string, index: number, array: string[]) => array.indexOf(value) === index,
-      )
+      discogData.genres = discogData.genres
+        .filter((value: string, index: number, array: string[]) => array.indexOf(value) === index)
+        .filter(Boolean)
+      discogData.styles = discogData.styles
+        .filter((value: string, index: number, array: string[]) => array.indexOf(value) === index)
+        .filter(Boolean)
 
-      discogsData.push(data)
+      data.genres = data.genres
+        .filter((value: string, index: number, array: string[]) => array.indexOf(value) === index)
+        .filter(Boolean)
+      data.styles = data.styles
+        .filter((value: string, index: number, array: string[]) => array.indexOf(value) === index)
+        .filter(Boolean)
+
+      discogsData.push(discogData)
     }
   }
 
+  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2))
   fs.writeFileSync(discogsDataPath, JSON.stringify(discogsData, null, 2))
 }
