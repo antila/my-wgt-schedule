@@ -15,8 +15,8 @@
     "typescript": "^5.4.5"
   },
   "scripts": {
-    "start": "yarn pnpify run tsx src/data/updateData.ts",
-    "watch": "yarn pnpify run chokidar \"src/*.ts\" -c \"yarn pnpify run tsx src/data/updateData.ts\""
+    "start": "yarn pnpify run tsx src/updateData.ts",
+    "watch": "yarn pnpify run chokidar \"src/*.ts\" -c \"yarn pnpify run tsx src/updateData.ts\""
   },
   "packageManager": "yarn@4.2.1",
   "dependencies": {

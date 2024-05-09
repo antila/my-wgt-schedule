@@ -4,6 +4,7 @@ import { type BandInfo, type Data, cacheFolder, dataPath, delay, discogsDataPath
 
 const BASE_URL = 'https://api.discogs.com'
 const TOKEN = process.env.DISCOGS_ACCESS_TOKEN
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 
 const getSearchUrl = (search: string) => {
   return `${BASE_URL}/database/search?token=${TOKEN}&type=artist&q=${search}`
@@ -13,9 +14,6 @@ const getArtistUrl = (artistId: number) => {
 }
 const getReleasesUrl = (artistId: number) => {
   return `${BASE_URL}/artists/${artistId}/releases?token=${TOKEN}`
-}
-const getReleaseUrl = (releaseId: number) => {
-  return `${BASE_URL}/releases/${releaseId}?token=${TOKEN}`
 }
 
 const options = {
@@ -54,6 +52,7 @@ export const enrichData = async () => {
   data = JSON.parse(fs.readFileSync(dataPath).toString())
   console.log('bands', data)
 
+  // Download search info
   for (const band of data.bands) {
     if (!fs.existsSync(path.join(cacheFolder, getBandFolder(band)))) {
       fs.mkdirSync(path.join(cacheFolder, getBandFolder(band)))
@@ -64,6 +63,7 @@ export const enrichData = async () => {
     await downloadFile(bandSearchDataFileName, url, band)
   }
 
+  // Add discogs id to band
   for (const band of data.bands) {
     const bandSearchDataFileName = path.join(cacheFolder, getBandFolder(band), 'search.json')
     if (fs.existsSync(bandSearchDataFileName)) {
@@ -77,6 +77,7 @@ export const enrichData = async () => {
     }
   }
 
+  // Download artist info
   for (const band of data.bands) {
     if (band.discogsId) {
       const bandDataFileName = path.join(cacheFolder, getBandFolder(band), 'artist.json')
@@ -85,6 +86,7 @@ export const enrichData = async () => {
     }
   }
 
+  // Download release info
   for (const band of data.bands) {
     if (band.discogsId) {
       const bandReleasesFileName = path.join(cacheFolder, getBandFolder(band), 'releases.json')
@@ -93,6 +95,7 @@ export const enrichData = async () => {
     }
   }
 
+  // Download all releases
   for (const band of data.bands) {
     if (band.discogsId) {
       const bandReleasesFileName = path.join(cacheFolder, getBandFolder(band), 'releases.json')
@@ -101,16 +104,10 @@ export const enrichData = async () => {
         const releases = JSON.parse(fs.readFileSync(bandReleasesFileName).toString())
         const mainReleases = releases.releases.filter((release: any) => release.role === 'Main')
 
-        let i = 0
         for (const release of mainReleases.sort((a: any, b: any) => b.year - a.year)) {
-          if (i > 4) {
-            continue
-          }
-
           const url = `${release.resource_url}?token=${TOKEN}`
           const releaseFileName = path.join(cacheFolder, getBandFolder(band), `release-${release.id}.json`)
           await downloadFile(releaseFileName, url, band)
-          i++
         }
       }
     }
@@ -118,6 +115,37 @@ export const enrichData = async () => {
 
   const discogsData: any = []
 
+  // Generate discogs-data
+  for (const band of data.bands) {
+    const files = fs.readdirSync(path.join(cacheFolder, getBandFolder(band)))
+    const releases = files.filter((filename) => filename.includes('release-'))
+    for (const releaseFile of releases) {
+      const releasePath = path.join(cacheFolder, getBandFolder(band), releaseFile)
+      const release = JSON.parse(fs.readFileSync(releasePath).toString())
+      if (release.videos && release.videos.length > 0) {
+        for (const video of release.videos) {
+          if (!Object.hasOwn(video, 'viewCount')) {
+            console.log('Need to get views for', band.name, video.title)
+            const videoId = video.uri.split('v=')[1]
+            const result = await fetch(
+              `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${YOUTUBE_API_KEY}`,
+            )
+            const response = await result.json()
+            const responseItem = response.items.find((item: any) => item.id === videoId)
+            if (responseItem) {
+              const viewCount = responseItem.statistics.viewCount
+              video.viewCount = Number.parseInt(viewCount, 10)
+            } else {
+              video.viewCount = 0
+            }
+          }
+        }
+        fs.writeFileSync(releasePath, JSON.stringify(release, null, 2))
+      }
+    }
+  }
+
+  // Generate discogs-data
   for (const band of data.bands) {
     if (band.discogsId) {
       const bandDataFileName = path.join(cacheFolder, getBandFolder(band), 'artist.json')
@@ -126,10 +154,14 @@ export const enrichData = async () => {
       if (fs.existsSync(bandDataFileName)) {
         const artist = JSON.parse(fs.readFileSync(bandDataFileName).toString())
         let image
+        let imageWidth
+        let imageHeight
         if (artist.images) {
           const primaryImage = artist.images.find((image: any) => image.type === 'primary')
           if (primaryImage) {
             image = primaryImage.uri
+            imageWidth = primaryImage.width
+            imageHeight = primaryImage.height
           }
         }
         const profile = artist.profile
@@ -138,6 +170,8 @@ export const enrichData = async () => {
         data = {
           bandId: band.id,
           image,
+          imageWidth,
+          imageHeight,
           profile,
           urls,
           genres: [],
@@ -167,9 +201,12 @@ export const enrichData = async () => {
         data.styles = data.styles.concat(release.styles)
 
         if (release.videos) {
-          for (const video of release.videos) {
+          for (const video of release.videos.sort((a: any, b: any) => b.viewCount - a.viewCount)) {
             data.videos.push(video.uri)
           }
+          console.log('data.videos before', data.videos)
+          data.videos = data.videos.slice(0, 3)
+          console.log('data.videos after', data.videos)
         }
       }
 

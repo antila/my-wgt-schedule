@@ -6,8 +6,8 @@ import { enrichData } from './discogs'
 
 const forceUpdate = false
 
-const dataFolder = path.join(__dirname, '..', '..', 'data')
-console.log('dataFolder', dataFolder)
+const dataFolder = path.join(__dirname, '..', 'data')
+const appPublicFolder = path.join(__dirname, '..', '..', 'app', 'public')
 export const cacheFolder = path.join(dataFolder, 'cache')
 export const wgtFolder = path.join(cacheFolder, 'wgt')
 export const dataPath = path.join(dataFolder, 'data.json')
@@ -159,10 +159,18 @@ export const processData = async () => {
   await fs.writeFileSync(dataPath, JSON.stringify(data, null, 2))
 }
 
+export const copyData = async () => {
+  const data = JSON.parse(fs.readFileSync(dataPath).toString())
+  fs.writeFileSync(path.join(appPublicFolder, 'data.json'), JSON.stringify(data, null, 2))
+  const discogsData = JSON.parse(fs.readFileSync(discogsDataPath).toString())
+  fs.writeFileSync(path.join(appPublicFolder, 'data-discogs.json'), JSON.stringify(discogsData, null, 2))
+}
+
 export const process = async () => {
   await downloadData()
   await processData()
   await enrichData()
+  await copyData()
 }
 
 void process()
