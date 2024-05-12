@@ -26,7 +26,75 @@ const options = {
 let data: Data
 
 const getBandFolder = (band: BandInfo) => {
-  return `${band.id}-${encodeURIComponent(band.name.replaceAll(' ', ''))}`
+  return `${encodeURIComponent(band.name.replaceAll(' ', ''))}`
+}
+
+const getBandName = (bandName: string): string => {
+  switch (bandName) {
+    case 'Anneke Van Giersbergen':
+      return 'Anneke van Giersbergen'
+    case 'Blackbook':
+      return 'BLACKBOOK'
+    case 'Brothel':
+      return 'brothel.'
+    case 'Dancing Plague':
+      return 'The Dancing Plague of 1518'
+    case 'Daniela Bedeski & David Cabi':
+      return 'Daniela Bedeski'
+    case 'Placebo Effekt':
+      return 'Placebo Effect'
+    case 'Heppner':
+      return 'Peter Heppner'
+    case 'Klutae':
+      return 'Klutæ'
+    case 'Vive La Fete':
+      return 'Vive La Fête!'
+    case 'Years Of Denial':
+      return 'Years of Denial'
+    case 'Derniere Volonte':
+      return 'Dernière Volonté'
+    case 'Elbland Philharmonie Sachsen':
+      return 'Elbland-Philharmonie Sachsen'
+    case 'Esplendor Geometrico':
+      return 'Esplendor Geométrico'
+    case 'Extize':
+      return 'Ext!ze'
+    case 'Knight$':
+      return 'KNIGHT$'
+    case 'Luigi Rubino & Riccardo Prencipe':
+      return 'Luigi Rubino'
+    case 'Maschinenkrieger KR 52':
+      return 'Maschinenkrieger KR52'
+    case 'MorphiuM':
+      return 'Morphium'
+    case 'Petra Hermanova':
+      return 'Petra Hermanová'
+    case 'Position Parallele':
+      return 'Position Parallèle'
+    case 'Rose Of Avalanche':
+      return 'The Rose Of Avalanche'
+    case 'The Cemetary Girlz':
+      return 'The Cemetary GirlZ'
+    case 'This Morn Omina':
+      return "This Morn' Omina"
+    case 'Tourdeforce':
+      return 'TourdeForce'
+
+    case 'The Feelgod McClouds':
+    case 'Opernensemble der Landesbühnen Sachsen':
+    case 'Noelia Sarris Gothic Piano':
+    case 'Nils Keppel':
+    case 'Model Collapse':
+    case 'Eihwar':
+    case 'David Leubner':
+    case 'Clout Blued':
+    case 'Circuit Preacher':
+    case 'Artwork/Belladonna':
+      return bandName
+
+    default:
+      return bandName
+  }
 }
 
 const downloadFile = async (filename: string, url: string, band: BandInfo) => {
@@ -58,7 +126,8 @@ export const enrichData = async () => {
     }
 
     const bandSearchDataFileName = path.join(discogsFolder, getBandFolder(band), 'search.json')
-    const url = getSearchUrl(encodeURIComponent(band.name))
+    const bandName = getBandName(band.name)
+    const url = getSearchUrl(encodeURIComponent(bandName))
     await downloadFile(bandSearchDataFileName, url, band)
   }
 
@@ -67,11 +136,12 @@ export const enrichData = async () => {
     const bandSearchDataFileName = path.join(discogsFolder, getBandFolder(band), 'search.json')
     if (fs.existsSync(bandSearchDataFileName)) {
       const data = JSON.parse(fs.readFileSync(bandSearchDataFileName).toString())
-      const matches: any = data.results.filter((artist: any) => artist.title === band.name)
+      const bandName = getBandName(band.name)
+      const matches: any = data.results.filter((artist: any) => artist.title === bandName)
       if (matches.length === 1) {
         band.discogsId = matches[0].id
       } else {
-        console.log('NOT FOUND', band.id, band.name)
+        console.log('NOT FOUND', band.name)
       }
     }
   }
@@ -167,7 +237,7 @@ export const enrichData = async () => {
         const urls = artist.urls
 
         discogData = {
-          bandId: band.id,
+          bandName: band.name,
           image,
           imageWidth,
           imageHeight,

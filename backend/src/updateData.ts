@@ -5,7 +5,6 @@ import Downloader from 'nodejs-file-downloader'
 import { enrichData } from './discogs'
 
 const dataFolder = path.join(__dirname, '..', 'data')
-const appPublicFolder = path.join(__dirname, '..', '..', 'app', 'public')
 export const cacheFolder = path.join(dataFolder, 'cache')
 export const historyFolder = path.join(dataFolder, 'history')
 export const wgtFolder = path.join(cacheFolder, 'wgt')
@@ -20,6 +19,10 @@ export const delay = async () => {
   await new Promise((resolve, reject) => {
     setTimeout((_: any) => resolve(true), rateLimit)
   })
+}
+
+export const generateBandSlug = (bandName: string): string => {
+  return bandName.replace(/[\W_]+/g, '')
 }
 
 export const downloadFile = async (url: string, directory: string, fileName: string) => {
@@ -75,6 +78,11 @@ export const downloadData = async () => {
     fs.rmSync(bandsHtmlFilePath)
   }
 
+  const wgtFiles = fs.readdirSync(wgtFolder)
+  for (const wgtFile of wgtFiles) {
+    fs.rmSync(path.join(wgtFolder, wgtFile))
+  }
+
   console.log('Downloading Bands HTML')
   await downloadFile(bandsUrl, wgtFolder, 'bands.html')
 
@@ -93,14 +101,26 @@ export const downloadData = async () => {
 
     const bandUrl = new URL(`https://www.wave-gotik-treffen.de/english/${href}`)
     const bandId = bandUrl.searchParams.get('id')
-    const bandFileName = `band-${bandId}.html`
-    const bandHtmlFilePath = path.join(wgtFolder, bandFileName)
+    const bandIdFileName = `band-${bandId}.html`
+    const bandHtmlFilePath = path.join(wgtFolder, bandIdFileName)
     if (fs.existsSync(bandHtmlFilePath)) {
       fs.rmSync(bandHtmlFilePath)
     }
 
     console.log(`Downloading ${++i}/${bandLinks.length}: ID ${bandId}`)
-    await downloadFile(bandUrl.toString(), wgtFolder, bandFileName)
+    await downloadFile(bandUrl.toString(), wgtFolder, bandIdFileName)
+
+    const content = await fs.readFileSync(bandHtmlFilePath).toString()
+    const $ = cheerio.load(content)
+    const bandData = $('#maincontent')
+    const fullName = bandData.find('h2').text().trim()
+    const name = fullName.substring(0, fullName.indexOf('(')).trim()
+
+    const bandFileName = `band-${generateBandSlug(name)}.html`
+    if (fs.existsSync(bandFileName)) {
+      fs.rmSync(bandFileName)
+    }
+    fs.renameSync(bandHtmlFilePath, path.join(wgtFolder, bandFileName))
   }
 }
 
@@ -117,7 +137,6 @@ export interface Data {
 }
 
 export interface BandInfo {
-  id: number
   name: string
   country: string
   time: string
@@ -160,7 +179,6 @@ export const processData = async () => {
     const address = bandData.find('div:contains(Address)').next('.span_1_of_2').text().trim()
 
     data.bands.push({
-      id,
       name,
       country,
       date,
@@ -186,23 +204,25 @@ export const makeHistory = async () => {
   let changes = false
 
   for (const lastBand of dataLast.bands) {
-    const bandFileName = `band-${lastBand.id}.html`
-    const content = await fs.readFileSync(path.join(wgtFolder, bandFileName)).toString()
-    const $ = cheerio.load(content)
-    const bandData = $('#maincontent')
+    const bandFileName = `band-${generateBandSlug(lastBand.name)}.html`
+    if (fs.existsSync(path.join(wgtFolder, bandFileName))) {
+      const content = await fs.readFileSync(path.join(wgtFolder, bandFileName)).toString()
+      const $ = cheerio.load(content)
+      const bandData = $('#maincontent')
 
-    const fullName = bandData.find('h2 span')
-    if (fullName.attr('style') === 'text-decoration:line-through;') {
-      console.log('Cancelled?', lastBand.name)
-      changes = true
-      data.history.push({
-        date: new Date().toISOString().split('.')[0].replace('T', ' '),
-        message: 'Cancelled',
-        band: lastBand.name,
-      })
+      const fullName = bandData.find('h2 span')
+      if (fullName.attr('style') === 'text-decoration:line-through;') {
+        console.log('Cancelled?', lastBand.name)
+        changes = true
+        data.history.push({
+          date: new Date().toISOString().split('.')[0].replace('T', ' '),
+          message: 'Cancelled',
+          band: lastBand.name,
+        })
+      }
     }
 
-    const band = data.bands.find((b) => b.id === lastBand.id)
+    const band = data.bands.find((b) => b.name === lastBand.name)
     if (band) {
       if (band.date !== lastBand.date) {
         console.log('Updated date', band.name, band.date)
@@ -235,7 +255,7 @@ export const makeHistory = async () => {
   }
 
   for (const band of data.bands) {
-    const lastBand = dataLast.bands.find((b) => b.id === band.id)
+    const lastBand = dataLast.bands.find((b) => b.name === band.name)
     if (!lastBand) {
       console.log('New band', band.name, band.venue, band.time)
       changes = true
@@ -247,19 +267,17 @@ export const makeHistory = async () => {
     }
   }
 
+  data.history = data.history.sort((a, b) => {
+    return b.date.localeCompare(a.date)
+  })
+
   if (changes) {
     const date = new Date().toISOString().split('.')[0].replace('T', ' ')
     fs.writeFileSync(path.join(dataFolder, `data-${date}.json`), JSON.stringify(data, null, 2))
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2))
     fs.writeFileSync(dataLastPath, JSON.stringify(data, null, 2))
   }
-}
 
-export const copyData = async () => {
-  const data = JSON.parse(fs.readFileSync(dataPath).toString())
-  fs.writeFileSync(path.join(appPublicFolder, 'data.json'), JSON.stringify(data, null, 2))
-  const discogsData = JSON.parse(fs.readFileSync(discogsDataPath).toString())
-  fs.writeFileSync(path.join(appPublicFolder, 'data-discogs.json'), JSON.stringify(discogsData, null, 2))
+  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2))
 }
 
 export const process = async () => {
@@ -267,7 +285,6 @@ export const process = async () => {
   await processData()
   await enrichData()
   await makeHistory()
-  await copyData()
 }
 
 void process()
