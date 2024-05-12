@@ -70,7 +70,7 @@ export const Filter = ({ data, title, selectedGenres, selectedStyles, callback }
             <ListFilter className='h-4' /> Filter {title}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-64 ml-2 drop-shadow-[0_5px_15px_rgba(79,70,229,0.25)]'>
+        <DropdownMenuContent className='w-64 overflow-auto max-h-[80vh] ml-2 drop-shadow-[0_5px_15px_rgba(79,70,229,0.25)]'>
           <DropdownMenuLabel>{title}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {withCount?.map((item) => {

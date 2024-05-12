@@ -1,47 +1,25 @@
-// 'use client'
-
+import { BandImage } from '@/components/band/image'
+import { Releases } from '@/components/band/releases'
 import { Scheduler } from '@/components/band/scheduler'
+import { BandVideos } from '@/components/band/videos'
 import { ButtonLink } from '@/components/buttonLink'
 import LazyYoutube from '@/components/lazyYoutube'
-import { Spinner } from '@/components/spinner'
 import { getData, getDiscogsData } from '@/hooks/dataHook'
 import { getDayFromDate } from '@/lib/dates'
-import { getScheduleData } from '@/lib/scheduleData'
+import { loadArtistImages, loadArtistReleases, loadArtistVideos } from '@/lib/settings'
 import { generateBandSlug } from '@/lib/utils'
-import type { BandInfo } from '@/types/band'
-import type { DiscogsData } from '@/types/discogs'
-import { ChevronLeft, ChevronRight, Plus, Sprout, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Navigation2 } from 'lucide-react'
 import Link from 'next/link'
-
-// export async function getServerSideProps() {
-//   const initialData = await getData()
-//   const initialDiscogsData = await getDiscogsData()
-//   return { props: { initialData, initialDiscogsData } }
-// }
 
 interface BandProps {
   params: { band: string }
-  // props: {
-  //   initialData: BandInfo[]
-  //   initialDiscogsData: DiscogsData[]
-  // }
 }
 
 const Band = async ({ params }: BandProps) => {
   const bandSlug = params.band
 
-  // const { isPending, data } = useDataQuery()
-  // const { isPending: discogsIsPending, data: discogsData } = useDiscogsQuery()
   const data = await getData()
   const discogsData = await getDiscogsData()
-
-  // if (isPending || discogsIsPending) {
-  //   return <Spinner />
-  // }
-
-  // if (!data || !discogsData) {
-  //   return <div>No data</div>
-  // }
 
   if (!data.bands) {
     throw new Error('no bands')
@@ -58,6 +36,8 @@ const Band = async ({ params }: BandProps) => {
   const nextBand = data.bands.at(index + 1)
 
   const discogs = discogsData.find((item) => item.bandName === band.name)
+
+  const mapQuery = encodeURIComponent(`${band?.address}, Leipzig, Germany`)
 
   return (
     <div className=''>
@@ -81,11 +61,7 @@ const Band = async ({ params }: BandProps) => {
       )}
 
       <h1 className='text-4xl mb-2 clear-both'>{band?.name}</h1>
-      {discogs?.image ? (
-        <img src={discogs?.image} height={discogs.imageHeight} width={discogs.imageWidth} alt={band.name} />
-      ) : (
-        <></>
-      )}
+      <BandImage band={band} discogs={discogs} />
 
       <div className='bg-zinc-950 p-3 rounded-lg border-zinc-800 border mt-2 mb-4'>
         <p className='text-xl'>{band?.venue}</p>
@@ -101,6 +77,14 @@ const Band = async ({ params }: BandProps) => {
       </div>
 
       <Scheduler band={band} />
+
+      <ButtonLink
+        href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
+        className='w-full py-2'
+        target='_blank'
+      >
+        <Navigation2 className='inline-block' /> Navigate to {band?.address}
+      </ButtonLink>
 
       {discogs?.genres ? (
         <>
@@ -129,30 +113,7 @@ const Band = async ({ params }: BandProps) => {
         <></>
       )}
 
-      {discogs?.videos ? (
-        <>
-          <h2 className='text-2xl mt-4 mb-2'>Videos</h2>
-          {discogs?.videos.map((video) => {
-            return (
-              <div key={video} className='aspect-video w-full mb-4 bg-zinc-800'>
-                <LazyYoutube src={video.replace('/watch?v=', '/embed/')} />
-                {/* <iframe
-                  width='100%'
-                  height='100%'
-                  src={video.replace('/watch?v=', '/embed/')}
-                  title='YouTube video player'
-                  frameBorder='0'
-                  allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-                  referrerPolicy='strict-origin-when-cross-origin'
-                  allowFullScreen
-                /> */}
-              </div>
-            )
-          })}
-        </>
-      ) : (
-        <></>
-      )}
+      <BandVideos discogs={discogs} />
 
       {discogs?.urls ? (
         <>
@@ -169,28 +130,7 @@ const Band = async ({ params }: BandProps) => {
         <></>
       )}
 
-      {discogs?.releases ? (
-        <>
-          <h2 className='text-2xl mt-4 mb-2'>Releases</h2>
-          <div className='flex flex-wrap'>
-            {discogs?.releases
-              .sort((a, b) => b.year - a.year)
-              .map((release) => {
-                return (
-                  <div
-                    key={release.title.replaceAll(' ', '')}
-                    className='w-36 h-50 bg-zinc-900 mr-4 mb-4 rounded-xl content-around items-center text-center p-4 text-sm'
-                  >
-                    <img src={release?.thumb} alt={band.name} className='m-auto' />
-                    {release.title} ({release.year})
-                  </div>
-                )
-              })}
-          </div>
-        </>
-      ) : (
-        <></>
-      )}
+      <Releases band={band} discogs={discogs} />
     </div>
   )
 }

@@ -47,8 +47,8 @@ const BandList = ({
 
             {myBands
               .sort((a, b) => {
-                if (b.time.startsWith('0')) {
-                  return -1
+                if (b.time.startsWith('0') || a.time.startsWith('0')) {
+                  return b.time.localeCompare(a.time)
                 }
                 return a.time.localeCompare(b.time)
               })
