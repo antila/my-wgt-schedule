@@ -1,6 +1,7 @@
 'use client'
 
 import { ButtonLink } from '@/components/buttonLink'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getData } from '@/hooks/dataHook'
 import { type WgtDay, getDateFromDay } from '@/lib/dates'
@@ -8,6 +9,7 @@ import { type ScheduleData, ScheduleStatus, getScheduleData } from '@/lib/schedu
 import { generateBandSlug } from '@/lib/utils'
 import type { BandInfo } from '@/types/band'
 import type { Data } from '@/types/data'
+import Link from 'next/link'
 import { Fragment, useEffect, useState } from 'react'
 
 const BandList = ({
@@ -25,6 +27,19 @@ const BandList = ({
 
   return (
     <>
+      {myBands.length === 0 ? (
+        <Card className={'mb-2'}>
+          <CardHeader className='p-3 pb-1'>
+            <CardTitle>No bands added</CardTitle>
+          </CardHeader>
+          <CardContent className='p-3 pt-0'>
+            Go to the <Link href={'/bands'}>Bands</Link> page and start adding bands!
+          </CardContent>
+        </Card>
+      ) : (
+        <></>
+      )}
+
       {days.map((day) => {
         return (
           <Fragment key={day}>
@@ -80,17 +95,21 @@ const MySchedule = () => {
     return <div>No data</div>
   }
 
+  const bandsAdded = data.bands.filter((band: BandInfo) => schedule[band.name] === ScheduleStatus.SCHEDULED).length
+  const bandsInterested = data.bands.filter((band: BandInfo) => schedule[band.name] === ScheduleStatus.SCHEDULED).length
+  const bandsUndefined = data.bands.length - bandsAdded - bandsInterested
+
   return (
     <Tabs defaultValue='added' className='w-full'>
       <TabsList className='w-full'>
         <TabsTrigger className='w-1/3' value='added'>
-          Added
+          Added ({bandsAdded})
         </TabsTrigger>
         <TabsTrigger className='w-1/3' value='interested'>
-          Interested
+          Interested ({bandsInterested})
         </TabsTrigger>
         <TabsTrigger className='w-1/3' value='uncategorized'>
-          Not categorized
+          Not categorized ({bandsUndefined})
         </TabsTrigger>
       </TabsList>
       <TabsContent value='added'>
