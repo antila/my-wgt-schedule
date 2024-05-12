@@ -2,6 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { getData } from '@/hooks/dataHook'
+import { generateBandSlug } from '@/lib/utils'
+import Link from 'next/link'
 
 const Home = async () => {
   const data = await getData()
@@ -26,13 +28,15 @@ const Home = async () => {
           style = 'bg-green-950 border-green-800'
         }
         return (
-          <Card key={item.date} className={`mb-2 ${style}`}>
-            <CardHeader className='p-3 pb-1'>
-              <CardTitle>{item.band}</CardTitle>
-              <CardDescription>{item.date}</CardDescription>
-            </CardHeader>
-            <CardContent className='p-3 pt-0'>{item.message}</CardContent>
-          </Card>
+          <Link key={item.date} href={`/band/${generateBandSlug(item.band)}`}>
+            <Card className={`mb-2 ${style}`}>
+              <CardHeader className='p-3 pb-1'>
+                <CardTitle>{item.band}</CardTitle>
+                <CardDescription>{item.date}</CardDescription>
+              </CardHeader>
+              <CardContent className='p-3 pt-0'>{item.message}</CardContent>
+            </Card>
+          </Link>
         )
       })}
     </div>
