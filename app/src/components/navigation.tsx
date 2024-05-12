@@ -54,19 +54,7 @@ export const Navigation = (): JSX.Element => {
                 Home
               </SidebarLink>
               <Separator />
-              <SidebarLink href={'/me'} onClick={onClick}>
-                Schedule
-              </SidebarLink>
-              <Separator />
-              <SidebarLink href={'/bands'} onClick={onClick}>
-                Bands
-              </SidebarLink>
-              <Separator />
-              <SidebarLink href={'/days'} onClick={onClick}>
-                Days
-              </SidebarLink>
-              <Separator />
-              {/* <SidebarLink href={'/venues'} onClick={onClick}>
+              <SidebarLink href={'/venues'} onClick={onClick}>
                 Venues
               </SidebarLink>
               <Separator />
@@ -80,7 +68,7 @@ export const Navigation = (): JSX.Element => {
               <Separator />
               <SidebarLink href={'/about'} onClick={onClick}>
                 About
-              </SidebarLink> */}
+              </SidebarLink>
             </SheetDescription>
           </SheetHeader>
         </SheetContent>

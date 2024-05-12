@@ -8,7 +8,7 @@ export enum ScheduleStatus {
 }
 
 export interface ScheduleData {
-  [id: number]: ScheduleStatus
+  [bandName: string]: ScheduleStatus
 }
 
 export const getScheduleData = (): ScheduleData => {
@@ -25,40 +25,39 @@ export const getScheduleData = (): ScheduleData => {
 
 export const setScheduleData = (schedule: ScheduleData) => {
   localStorage.setItem('schedule', JSON.stringify(schedule))
-  console.log('schedule', schedule)
 }
 
-export const setBandAsScheduled = (bandId: number) => {
-  return setState(bandId, ScheduleStatus.SCHEDULED)
+export const setBandAsScheduled = (bandName: string) => {
+  return setState(bandName, ScheduleStatus.SCHEDULED)
 }
-export const setBandAsNo = (bandId: number) => {
-  return setState(bandId, ScheduleStatus.NO)
+export const setBandAsNo = (bandName: string) => {
+  return setState(bandName, ScheduleStatus.NO)
 }
-export const setBandAsInterested = (bandId: number) => {
-  return setState(bandId, ScheduleStatus.INTERESTED)
+export const setBandAsInterested = (bandName: string) => {
+  return setState(bandName, ScheduleStatus.INTERESTED)
 }
 
-const setState = (id: number, s: number) => {
+const setState = (bandName: string, s: number) => {
   const schedule = getScheduleData()
 
-  if (Object.hasOwn(schedule, id)) {
-    if (schedule[id] === s) {
-      delete schedule[id]
+  if (Object.hasOwn(schedule, bandName)) {
+    if (schedule[bandName] === s) {
+      delete schedule[bandName]
     } else {
-      schedule[id] = s
+      schedule[bandName] = s
     }
   } else {
-    schedule[id] = s
+    schedule[bandName] = s
   }
   setScheduleData(schedule)
 
-  return getBandState(id)
+  return getBandState(bandName)
 }
 
-export const getBandState = (bandId: number): ScheduleStatus => {
+export const getBandState = (bandName: string): ScheduleStatus => {
   const schedule = getScheduleData()
-  if (Object.hasOwn(schedule, bandId)) {
-    return schedule[bandId]
+  if (Object.hasOwn(schedule, bandName)) {
+    return schedule[bandName]
   }
 
   return -1

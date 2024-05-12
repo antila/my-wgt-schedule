@@ -5,7 +5,7 @@ interface Release {
 }
 
 export interface DiscogsData {
-  bandId: number
+  bandName: string
   image: string
   imageHeight: number
   imageWidth: number

@@ -33,7 +33,7 @@ const BandListDay = ({ day, data }: { day: WgtDay; data: Data }) => {
                 if (band.venue === venue) {
                   return (
                     <ButtonLink
-                      key={`band-${band.id}`}
+                      key={`band-${band.name}`}
                       href={`/band/${generateBandSlug(band.name)}`}
                       className='w-full'
                     >

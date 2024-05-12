@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { ButtonLink } from '../buttonLink'
 
 export const Scheduler = ({ band }: { band: BandInfo }) => {
-  const bandState = getBandState(band.id)
+  const bandState = getBandState(band.name)
 
   const [state, setState] = useState(bandState)
 
@@ -19,7 +19,7 @@ export const Scheduler = ({ band }: { band: BandInfo }) => {
         className={` w-full text-lg ${state === ScheduleStatus.SCHEDULED ? activeButton : ''}`}
         onClick={(event) => {
           event.preventDefault()
-          const newState = setBandAsScheduled(band.id)
+          const newState = setBandAsScheduled(band.name)
           setState(newState ?? -1)
         }}
       >
@@ -38,7 +38,7 @@ export const Scheduler = ({ band }: { band: BandInfo }) => {
         className={` w-full text-lg ${state === ScheduleStatus.INTERESTED ? activeButton : ''}`}
         onClick={(event) => {
           event.preventDefault()
-          const newState = setBandAsInterested(band.id)
+          const newState = setBandAsInterested(band.name)
           setState(newState ?? -1)
         }}
       >
@@ -49,7 +49,7 @@ export const Scheduler = ({ band }: { band: BandInfo }) => {
         className={` w-full text-lg ${state === ScheduleStatus.NO ? activeButton : ''}`}
         onClick={(event) => {
           event.preventDefault()
-          const newState = setBandAsNo(band.id)
+          const newState = setBandAsNo(band.name)
           setState(newState ?? -1)
         }}
       >

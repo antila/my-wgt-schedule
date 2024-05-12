@@ -32,15 +32,13 @@ const Bands = () => {
   if (!data || !discogsData) {
     return <div>No data</div>
   }
-  // console.log('home', isPending, error, data)
-  console.log('data', Object.keys(data))
 
   const selectedBands = data.bands?.filter((band) => {
     if (selectedGenres.length === 0 && selectedStyles.length === 0) {
       return true
     }
 
-    const bandDiscogs = discogsData.find((item) => item.bandId === band.id)
+    const bandDiscogs = discogsData.find((item) => item.bandName === band.name)
     let found = false
 
     if (bandDiscogs) {
@@ -125,7 +123,7 @@ const Bands = () => {
       </h2>
 
       {selectedBands.map((band) => {
-        const bandState = getBandState(band.id)
+        const bandState = getBandState(band.name)
         let style = ''
         if (bandState === ScheduleStatus.SCHEDULED) {
           style = activeButton
@@ -138,7 +136,7 @@ const Bands = () => {
         }
 
         return (
-          <div key={`band-link-${band.id}`}>
+          <div key={`band-link-${band.name}`}>
             <ButtonLink noBg className={`${style} w-full`} href={`/band/${generateBandSlug(band.name)}`}>
               {band.name} <span className={`${mutedText}`}>{band.country}</span>
               {bandState === ScheduleStatus.SCHEDULED ? (

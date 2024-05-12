@@ -57,7 +57,7 @@ const Band = async ({ params }: BandProps) => {
   const prevBand = data.bands.at(index - 1)
   const nextBand = data.bands.at(index + 1)
 
-  const discogs = discogsData.find((item) => item.bandId === band.id)
+  const discogs = discogsData.find((item) => item.bandName === band.name)
 
   return (
     <div className=''>
@@ -196,10 +196,9 @@ const Band = async ({ params }: BandProps) => {
 }
 
 export async function generateStaticParams() {
-  const response = await fetch('https://wgt.zauber.tech/data.json')
-  const bands = await response.json()
+  const data = await getData()
 
-  const params = bands.map((band: any) => {
+  const params = data.bands.map((band: any) => {
     return {
       band: generateBandSlug(band.name),
     }

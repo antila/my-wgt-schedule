@@ -4,7 +4,6 @@ interface Image {
 }
 
 export interface BandInfo {
-  id: number
   name: string
   time: string
   date: string

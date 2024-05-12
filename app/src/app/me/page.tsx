@@ -15,10 +15,10 @@ const BandList = ({
   schedule,
   status,
 }: { bands: BandInfo[]; schedule: ScheduleData; status: ScheduleStatus }) => {
-  let myBands = bands.filter((band: BandInfo) => schedule[band.id] === status)
+  let myBands = bands.filter((band: BandInfo) => schedule[band.name] === status)
 
   if (status === ScheduleStatus.UNDEFINED) {
-    myBands = bands.filter((band: BandInfo) => Object.hasOwn(schedule, band.id) === false)
+    myBands = bands.filter((band: BandInfo) => Object.hasOwn(schedule, band.name) === false)
   }
 
   const days: WgtDay[] = ['Friday', 'Saturday', 'Sunday', 'Monday']
@@ -41,7 +41,7 @@ const BandList = ({
                 if (band.date === getDateFromDay(day)) {
                   return (
                     <ButtonLink
-                      key={`band-${band.id}`}
+                      key={`band-${band.name}`}
                       href={`/band/${generateBandSlug(band.name)}`}
                       className='w-full'
                     >
@@ -60,7 +60,7 @@ const BandList = ({
 }
 
 const MySchedule = () => {
-  const initialData: Data = { bands: [], genres: [], styles: [] }
+  const initialData: Data = { bands: [], genres: [], styles: [], history: [] }
   const [data, setData] = useState(initialData)
 
   const initialSchedule: ScheduleData = {}
