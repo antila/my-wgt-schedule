@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { navBackground } from '@/lib/theme'
 import { CalendarDays, Home, MapPinned, Menu, Music, Settings, UserRound } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import React from 'react'
 
 interface NavLinkProps {
@@ -12,8 +13,23 @@ interface NavLinkProps {
 }
 
 const NavLink = ({ children, href }: NavLinkProps): JSX.Element => {
+  const pathname = usePathname()
+  console.log('pathname', pathname, href)
+
+  let active = ''
+  if (
+    pathname.startsWith(href) ||
+    pathname.startsWith(href.replace('days', 'day')) ||
+    pathname.startsWith(href.replace('bands', 'band'))
+  ) {
+    active = 'bg-zinc-800'
+  }
+
   return (
-    <Link className='m-2 w-35 h-10 text-sm inline-block content-around items-center text-center basis-1/4' href={href}>
+    <Link
+      className={`${active} py-2 w-full h-full text-sm inline-block content-around items-center text-center basis-1/4`}
+      href={href}
+    >
       {children}
     </Link>
   )
@@ -27,7 +43,7 @@ interface SidebarLinkProps {
 
 const SidebarLink = ({ children, href, onClick }: SidebarLinkProps): JSX.Element => {
   return (
-    <Link className='m-2 w-full text-2xl inline-block' href={href} onClick={onClick}>
+    <Link className='m-2 w-full text-2xl inline-block text-left' href={href} onClick={onClick}>
       {children}
     </Link>
   )
@@ -41,7 +57,7 @@ export const Navigation = (): JSX.Element => {
   }
 
   return (
-    <div className={`mb-2 py-2 flex ${navBackground}`}>
+    <div className={`mb-2 flex ${navBackground}`}>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger>
           <Menu className='w-24' />
