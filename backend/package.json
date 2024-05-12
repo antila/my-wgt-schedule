@@ -16,7 +16,9 @@
   },
   "scripts": {
     "start": "yarn pnpify run tsx src/updateData.ts",
-    "watch": "yarn pnpify run chokidar \"src/*.ts\" -c \"yarn pnpify run tsx src/updateData.ts\""
+    "upload": "aws --profile wgt s3 cp ./data/data.json s3://wgt.zauber.tech && aws --profile wgt s3 cp ./data/data-discogs.json s3://wgt.zauber.tech",
+    "deploy": "rsync -av -R . zauber.tech:~/wgt",
+    "cron": "yarn run start && yarn run upload"
   },
   "packageManager": "yarn@4.2.1",
   "dependencies": {

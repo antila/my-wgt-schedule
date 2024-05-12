@@ -2,6 +2,7 @@
 
 set -e 
 
+aws --profile wgt s3 cp s3://wgt.zauber.tech/data.json public/data.json
+aws --profile wgt s3 cp s3://wgt.zauber.tech/data-discogs.json data-discogs.json
 yarn run build
-rsync -av -R out zauber.tech:~/wgt/
-ssh zauber.tech "cp -R ~/wgt/out/* /var/www/wgt"
+aws --profile wgt s3 sync --delete ./out s3://wgt.zauber.tech
