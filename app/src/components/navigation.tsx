@@ -14,7 +14,6 @@ interface NavLinkProps {
 
 const NavLink = ({ children, href }: NavLinkProps): JSX.Element => {
   const pathname = usePathname()
-  console.log('pathname', pathname, href)
 
   let active = ''
   if (
@@ -74,9 +73,9 @@ export const Navigation = (): JSX.Element => {
                 Venues
               </SidebarLink>
               <Separator />
-              <SidebarLink href={'/resources'} onClick={onClick}>
+              {/* <SidebarLink href={'/resources'} onClick={onClick}>
                 Resources
-              </SidebarLink>
+              </SidebarLink> */}
               <Separator />
               <SidebarLink href={'/settings'} onClick={onClick}>
                 Settings

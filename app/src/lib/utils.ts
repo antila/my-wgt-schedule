@@ -8,3 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export const generateBandSlug = (bandName: string): string => {
   return bandName.replace(/[\W_]+/g, '')
 }
+
+export const generateVenueSlug = (venueName: string): string => {
+  return venueName.replace(/[\W_]+/g, '')
+}
