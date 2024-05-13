@@ -2,9 +2,8 @@
 
 import { ButtonLink } from '@/components/buttonLink'
 import { getData, getVenues } from '@/hooks/dataHook'
-import { getDateFromDay } from '@/lib/dates'
+import { type WgtDay, getDateFromDay } from '@/lib/dates'
 import { generateBandSlug, generateVenueSlug } from '@/lib/utils'
-import type { VenueList } from '@/types/venue'
 import { Navigation2 } from 'lucide-react'
 import { Fragment } from 'react'
 
@@ -87,3 +86,5 @@ export async function generateStaticParams() {
 }
 
 export default Venues
+
+export const dynamic = 'force-static'

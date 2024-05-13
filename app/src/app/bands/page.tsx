@@ -5,7 +5,7 @@ import { Filter } from '@/components/filter'
 import { Spinner } from '@/components/spinner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { getClientData, getDiscogsData, useDataQuery, useDiscogsQuery } from '@/hooks/dataHook'
+import { useDataQuery, useDiscogsQuery } from '@/hooks/dataHook'
 import { ScheduleStatus, getBandState } from '@/lib/scheduleData'
 import { activeButton, interestedButton, mutedText, notInterestedButton } from '@/lib/theme'
 import { generateBandSlug } from '@/lib/utils'
@@ -169,3 +169,5 @@ const Bands = () => {
 }
 
 export default Bands
+
+export const dynamic = 'force-static'

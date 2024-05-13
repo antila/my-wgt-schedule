@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang='en' className='dark'>
       <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
         <Providers>
-          <div className='mx-auto'>
+          <div className='container mx-auto'>
             <Navigation />
             <div className='px-2'>{children}</div>
           </div>

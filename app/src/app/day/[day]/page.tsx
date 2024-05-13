@@ -96,3 +96,5 @@ export const generateStaticParams = async () => {
 }
 
 export default Day
+
+export const dynamic = 'force-static'

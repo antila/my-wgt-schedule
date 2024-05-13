@@ -15,6 +15,7 @@ interface BandProps {
   params: { band: string }
 }
 
+// export default async function Band({ params }: BandProps) {
 const Band = async ({ params }: BandProps) => {
   const bandSlug = params.band
 
@@ -138,13 +139,17 @@ const Band = async ({ params }: BandProps) => {
 export async function generateStaticParams() {
   const data = await getData()
 
-  const params = data.bands.map((band: any) => {
-    return {
-      band: generateBandSlug(band.name),
-    }
-  })
+  const params = data.bands
+    .map((band: any) => {
+      return {
+        band: generateBandSlug(band.name),
+      }
+    })
+    .filter((item) => item.band !== '')
 
   return params
 }
 
 export default Band
+
+export const dynamic = 'force-static'

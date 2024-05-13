@@ -42,3 +42,5 @@ const Venues = async () => {
 }
 
 export default Venues
+
+export const dynamic = 'force-static'

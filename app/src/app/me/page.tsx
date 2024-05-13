@@ -126,3 +126,5 @@ const MySchedule = () => {
 }
 
 export default MySchedule
+
+export const dynamic = 'force-static'

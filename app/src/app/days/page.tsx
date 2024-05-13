@@ -24,3 +24,5 @@ const Schedule = () => {
 }
 
 export default Schedule
+
+export const dynamic = 'force-static'
