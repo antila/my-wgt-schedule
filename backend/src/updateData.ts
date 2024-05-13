@@ -167,7 +167,7 @@ export const processData = async () => {
     const fullName = bandData.find('h2').text().trim()
     const name = fullName.substring(0, fullName.indexOf('(')).trim()
     const country = fullName.substring(fullName.indexOf('(')).trim()
-    const date = bandData.find('h3').text().trim()
+    const date = bandData.find('h3').text().replace('*', '').trim()
     const time = bandData
       .find('div:contains(Time)')
       .next('.span_1_of_2')
